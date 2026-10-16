@@ -488,6 +488,41 @@
             document.getElementById('summary-total-cost').innerText = `$${grandTotal.toLocaleString()}`;
         }
     </script>
+    
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDnb0ATeGOM1lH-KfGpVMn9BFaQcWn6EuQ",
+    authDomain: "gearhead-lab-db.firebaseapp.com",
+    projectId: "gearhead-lab-db",
+    storageBucket: "gearhead-lab-db.firebasestorage.app",
+    messagingSenderId: "683309233523",
+    appId: "1:683309233523:web:1b2242fa8bdab1c37ec106"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadCarsFromFirestore() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "cars"));
+      if (!querySnapshot.empty) {
+        cars = [];
+        querySnapshot.forEach((doc) => {
+          cars.push({ id: doc.id, ...doc.data() });
+        });
+        renderCars();
+      }
+    } catch (e) {
+      console.log("Using default cars");
+    }
+  }
+
+  loadCarsFromFirestore();
+</script>
+
 </body>
 </html>
 
