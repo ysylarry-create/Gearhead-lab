@@ -1,528 +1,455 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full bg-zinc-950 text-zinc-100">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gearhead Lab - Project Car & Engine Swap Estimator</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        garageDark: '#121214',
-                        garageCard: '#1a1a1e',
-                        garageBorder: '#27272f',
-                        accentOrange: '#f97316',
-                        accentRed: '#ef4444',
-                        accentBlue: '#3b82f6',
-                    }
-                }
-            }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gearhead Lab - Step-by-Step Swap Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
         }
-    </script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { background-color: #121214; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #121214; }
-        ::-webkit-scrollbar-thumb { background: #27272f; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
-        .tab-btn.active { border-bottom: 2px solid #f97316; color: #f97316; }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col">
-
-    <!-- Header / Navbar -->
-    <header class="bg-garageCard border-b border-garageBorder sticky top-0 z-50 px-4 py-3">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="bg-accentOrange/10 p-2.5 rounded-xl border border-accentOrange/30 text-accentOrange text-xl">
-                    <i class="fa-solid fa-wrench"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-black tracking-wider uppercase text-white">Gearhead<span class="text-accentOrange">Lab</span></h1>
-                    <p class="text-xs text-zinc-400">Project Car & Engine Swap Estimator</p>
-                </div>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="flex gap-2 bg-garageDark p-1.5 rounded-xl border border-garageBorder overflow-x-auto max-w-full">
-                <button onclick="switchTab('garage')" id="btn-tab-garage" class="tab-btn active px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-car"></i> 1. Select Car
-                </button>
-                <button onclick="switchTab('swap')" id="btn-tab-swap" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-rotate"></i> 2. Engine Swap
-                </button>
-                <button onclick="switchTab('mods')" id="btn-tab-mods" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-gears"></i> 3. Mods & Parts
-                </button>
-                <button onclick="switchTab('summary')" id="btn-tab-summary" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
-                    <i class="fa-solid fa-file-invoice-dollar"></i> 4. Build Sheet & Cost
-                </button>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        <!-- Left 2 Columns: Dynamic Content Tabs -->
-        <div class="lg:col-span-2 space-y-6">
-
-            <!-- TAB 1: VEHICLE SELECTOR -->
-            <div id="tab-garage" class="space-y-6">
-                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
-                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                        <span class="text-accentOrange"><i class="fa-solid fa-car-side"></i></span> Choose Base Chassis
-                    </h2>
-                    <p class="text-sm text-zinc-400 mb-4">Select the foundational platform for your build project.</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="vehicle-grid">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 2: ENGINE SWAP MATRIX -->
-            <div id="tab-swap" class="hidden space-y-6">
-                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
-                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                        <span class="text-accentOrange"><i class="fa-solid fa-bolt"></i></span> Powerplant & Engine Swap Options
-                    </h2>
-                    <p class="text-sm text-zinc-400 mb-4">Keep stock engine or drop in a custom powerplant. Review custom fabrication and wiring complexity ratings.</p>
-                    
-                    <div class="space-y-4" id="engine-list">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 3: MODIFICATIONS CONFIGURATOR -->
-            <div id="tab-mods" class="hidden space-y-6">
-                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
-                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                        <span class="text-accentOrange"><i class="fa-solid fa-toolbox"></i></span> Performance & Aesthetic Modifications
-                    </h2>
-                    <p class="text-sm text-zinc-400 mb-4">Select upgrades to boost horsepower, improve handling, and reduce weight.</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="mods-grid">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 4: SUMMARY & COST BREAKDOWN -->
-            <div id="tab-summary" class="hidden space-y-6">
-                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl space-y-6">
-                    <div>
-                        <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                            <span class="text-accentOrange"><i class="fa-solid fa-receipt"></i></span> Project Cost & Build Blueprint
-                        </h2>
-                        <p class="text-sm text-zinc-400">Complete breakdown of parts, labor mode, and estimated build sheet.</p>
-                    </div>
-
-                    <!-- Labor Mode Toggle -->
-                    <div class="bg-garageDark p-4 rounded-xl border border-garageBorder flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <div>
-                            <span class="font-semibold text-white block">Labor Strategy</span>
-                            <span class="text-xs text-zinc-400">DIY Garage builds save thousands on shop rates.</span>
-                        </div>
-                        <div class="flex bg-garageCard p-1 rounded-lg border border-garageBorder">
-                            <button onclick="setLaborMode('diy')" id="btn-labor-diy" class="px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition">DIY (Free Labor)</button>
-                            <button onclick="setLaborMode('shop')" id="btn-labor-shop" class="px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition">Speed Shop ($90/hr)</button>
-                        </div>
-                    </div>
-
-                    <!-- Itemized Cost Table -->
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-garageDark text-zinc-400 uppercase text-xs border-b border-garageBorder">
-                                <tr>
-                                    <th class="p-3">Component / Part</th>
-                                    <th class="p-3">Category</th>
-                                    <th class="p-3 text-right">Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cost-table-body" class="divide-y divide-garageBorder text-zinc-200">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="flex flex-col sm:flex-row justify-between items-center bg-garageDark p-4 rounded-xl border border-garageBorder gap-4">
-                        <div>
-                            <span class="text-xs text-zinc-400 block uppercase font-bold tracking-wider">Total Estimated Budget</span>
-                            <span class="text-3xl font-black text-accentOrange" id="summary-total-cost">$0</span>
-                        </div>
-                        <button onclick="alert('Build sheet saved to local memory! Ready for export.')" class="w-full sm:w-auto bg-accentOrange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-download"></i> Export Build Sheet
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Right Column: Persistent Live Stats & Performance Card -->
-        <div class="space-y-6">
-            <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl sticky top-20 space-y-6">
-                <div>
-                    <h3 class="text-xs uppercase font-extrabold tracking-widest text-zinc-400 mb-1">Active Build Platform</h3>
-                    <h2 class="text-xl font-black text-white" id="stat-car-name">Mazda Miata (NA)</h2>
-                </div>
-
-                <!-- Dyno Visualizer Simulation -->
-                <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="text-xs font-bold text-zinc-400 uppercase"><i class="fa-solid fa-chart-line text-accentOrange"></i> Simulated Dyno Output</span>
-                        <span class="text-xs text-accentOrange font-mono" id="stat-power-label">140 HP / 125 LB-FT</span>
-                    </div>
-                    <div class="h-28 w-full bg-garageCard rounded-lg relative overflow-hidden flex items-end p-2 border border-garageBorder">
-                        <!-- Grid lines -->
-                        <div class="absolute inset-0 grid grid-rows-4 grid-cols-4 pointer-events-none opacity-10">
-                            <div class="border-b border-white"></div>
-                            <div class="border-b border-white"></div>
-                            <div class="border-b border-white"></div>
-                            <div class="border-b border-white"></div>
-                        </div>
-                        <!-- Dynamic Dyno Curve Bar/Fill -->
-                        <div id="dyno-bar" class="w-full bg-gradient-to-t from-orange-600 to-amber-400 rounded transition-all duration-500" style="height: 30%;"></div>
-                    </div>
-                </div>
-
-                <!-- Performance Metrics Grid -->
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
-                        <span class="text-xs text-zinc-400 block">Est. 0-60 MPH</span>
-                        <span class="text-lg font-black text-white" id="stat-060">8.0s</span>
-                    </div>
-                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
-                        <span class="text-xs text-zinc-400 block">Power-to-Weight</span>
-                        <span class="text-lg font-black text-white" id="stat-ptw">0.06 HP/lb</span>
-                    </div>
-                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
-                        <span class="text-xs text-zinc-400 block">Total Weight</span>
-                        <span class="text-lg font-black text-white" id="stat-weight">2,300 lbs</span>
-                    </div>
-                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
-                        <span class="text-xs text-zinc-400 block">Current Cost</span>
-                        <span class="text-lg font-black text-accentOrange" id="stat-cost">$5,000</span>
-                    </div>
-                </div>
-
-                <!-- Quick Jump Navigation / Proceed -->
-                <button onclick="nextTab()" id="proceed-btn" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2">
-                    <span>Proceed to Engine Swap</span> <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-garageCard border-t border-garageBorder mt-auto py-4 text-center text-xs text-zinc-500">
-        Gearhead Lab Engine & Modification Estimator &copy; 2026. Built for car builders and tuners.
-    </footer>
-
-    <!-- JavaScript Application Logic -->
-    <script>
-        // Database of Cars
-        const cars = [
-            { id: 'miata', name: 'Mazda Miata (NA)', basePrice: 5000, stockHp: 130, stockWeight: 2300, image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80' },
-            { id: '240sx', name: 'Nissan 240SX (S13)', basePrice: 8500, stockHp: 140, stockWeight: 2700, image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' },
-            { id: 'civic', name: 'Honda Civic Hatch (EG)', basePrice: 4500, stockHp: 125, stockWeight: 2350, image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80' },
-            { id: 'e36', name: 'BMW 325i (E36)', basePrice: 6000, stockHp: 189, stockWeight: 3000, image: 'https://images.unsplash.com/photo-1555353540-64580b51c258?auto=format&fit=crop&w=600&q=80' }
-        ];
-
-        // Database of Engines
-        const engines = [
-            { id: 'stock', name: 'Keep Stock Engine', hpAdd: 0, weightAdd: 0, cost: 0, difficulty: 'Stock', desc: 'Retain factory powerplant with regular maintenance.' },
-            { id: 'ls1', name: '5.7L LS1 V8 Crate', hpAdd: 220, weightAdd: 80, cost: 6500, difficulty: 'High (Custom Mounts/Wiring)', desc: 'Legendary Chevy small-block swap. Massive power, balanced weight.' },
-            { id: '2jz', name: '3.0L 2JZ-GTE Turbo', hpAdd: 280, weightAdd: 150, cost: 8500, difficulty: 'Expert (Fab Work Required)', desc: 'Bulletproof inline-6 turbo platform capable of extreme boost.' },
-            { id: 'k24', name: '2.4L K24 i-VTEC Swap', hpAdd: 80, weightAdd: -20, cost: 4200, difficulty: 'Medium (Adapter Kit)', desc: 'High-revving naturally aspirated powerhouse with incredible aftermarket support.' }
-        ];
-
-        // Database of Upgrades
-        const modifications = [
-            { id: 'turbo', name: 'Stage 2 Turbocharger Kit', hp: 120, weight: 45, cost: 3200, category: 'Power' },
-            { id: 'ecu', name: 'Standalone ECU & Dyno Tune', hp: 35, weight: 2, cost: 1500, category: 'Electronics' },
-            { id: 'coilovers', name: 'Track-Spec Adjustable Coilovers', hp: 0, weight: -10, cost: 1400, category: 'Handling' },
-            { id: 'brakes', name: 'Big Brake Kit (4-Piston)', hp: 0, weight: 15, cost: 1800, category: 'Handling' },
-            { id: 'exhaust', name: '3-inch Stainless Catback Exhaust', hp: 15, weight: -15, cost: 850, category: 'Power' },
-            { id: 'carbon', name: 'Carbon Fiber Hood & Trunk', hp: 0, weight: -45, cost: 1600, category: 'Weight Reduction' }
-        ];
-
-        // State Management
-        let selectedCar = cars[0];
-        let selectedEngine = engines[0];
-        let selectedMods = [];
-        let laborMode = 'diy'; // 'diy' or 'shop'
-        let currentTab = 'garage';
-
-        // Initialization
-        window.onload = function() {
-            renderCars();
-            renderEngines();
-            renderMods();
-            updateCalculations();
-        };
-
-        function switchTab(tabId) {
-            currentTab = tabId;
-            ['garage', 'swap', 'mods', 'summary'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`btn-tab-${t}`).classList.remove('active');
-            });
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`btn-tab-${tabId}`).classList.add('active');
-
-            // Update proceed button text / action
-            const proceedBtn = document.getElementById('proceed-btn');
-            if (tabId === 'garage') {
-                proceedBtn.innerHTML = '<span>Proceed to Engine Swap</span> <i class="fa-solid fa-arrow-right"></i>';
-                proceedBtn.onclick = () => switchTab('swap');
-            } else if (tabId === 'swap') {
-                proceedBtn.innerHTML = '<span>Proceed to Modifications</span> <i class="fa-solid fa-arrow-right"></i>';
-                proceedBtn.onclick = () => switchTab('mods');
-            } else if (tabId === 'mods') {
-                proceedBtn.innerHTML = '<span>View Build Cost & Summary</span> <i class="fa-solid fa-arrow-right"></i>';
-                proceedBtn.onclick = () => switchTab('summary');
-            } else {
-                proceedBtn.innerHTML = '<span>Modify Build Setup</span> <i class="fa-solid fa-rotate-right"></i>';
-                proceedBtn.onclick = () => switchTab('garage');
-            }
-        }
-
-        function nextTab() {
-            if (currentTab === 'garage') switchTab('swap');
-            else if (currentTab === 'swap') switchTab('mods');
-            else if (currentTab === 'mods') switchTab('summary');
-            else switchTab('garage');
-        }
-
-        function renderCars() {
-            const grid = document.getElementById('vehicle-grid');
-            grid.innerHTML = cars.map(car => `
-                <div onclick="selectCar('${car.id}')" class="cursor-pointer bg-garageDark border ${selectedCar.id === car.id ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col justify-between">
-                    <div>
-                        <div class="h-32 rounded-lg bg-cover bg-center mb-3 border border-garageBorder" style="background-image: url('${car.image}')"></div>
-                        <h3 class="font-bold text-white text-base">${car.name}</h3>
-                        <p class="text-xs text-zinc-400 mt-1">Stock: ${car.stockHp} HP | ${car.stockWeight} lbs</p>
-                    </div>
-                    <div class="mt-4 pt-3 border-t border-garageBorder flex justify-between items-center">
-                        <span class="text-xs text-zinc-400">Base Chassis Value</span>
-                        <span class="font-bold text-accentOrange">$${car.basePrice.toLocaleString()}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function selectCar(id) {
-            selectedCar = cars.find(c => c.id === id);
-            renderCars();
-            updateCalculations();
-        }
-
-        function renderEngines() {
-            const list = document.getElementById('engine-list');
-            list.innerHTML = engines.map(eng => `
-                <div onclick="selectEngine('${eng.id}')" class="cursor-pointer bg-garageDark border ${selectedEngine.id === eng.id ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-white">${eng.name}</h3>
-                            <span class="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono">${eng.difficulty}</span>
-                        </div>
-                        <p class="text-xs text-zinc-400 mt-1">${eng.desc}</p>
-                        <p class="text-xs font-semibold text-emerald-400 mt-2">+${eng.hpAdd} HP | ${eng.weightAdd >= 0 ? '+' : ''}${eng.weightAdd} lbs weight</p>
-                    </div>
-                    <div class="text-right sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-garageBorder flex sm:flex-col justify-between items-center sm:items-end">
-                        <span class="text-xs text-zinc-400 sm:hidden">Swap Cost:</span>
-                        <span class="font-black text-accentOrange text-lg">$${eng.cost.toLocaleString()}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function selectEngine(id) {
-            selectedEngine = engines.find(e => e.id === id);
-            renderEngines();
-            updateCalculations();
-        }
-
-        function renderMods() {
-            const grid = document.getElementById('mods-grid');
-            grid.innerHTML = modifications.map(mod => {
-                const isSelected = selectedMods.includes(mod.id);
-                return `
-                    <div onclick="toggleMod('${mod.id}')" class="cursor-pointer bg-garageDark border ${isSelected ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-start">
-                                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">${mod.category}</span>
-                                <div class="w-5 h-5 rounded-md border ${isSelected ? 'bg-accentOrange border-accentOrange text-white' : 'border-garageBorder'} flex items-center justify-center text-xs">
-                                    ${isSelected ? '<i class="fa-solid fa-check"></i>' : ''}
-                                </div>
-                            </div>
-                            <h3 class="font-bold text-white mt-2">${mod.name}</h3>
-                            <p class="text-xs text-emerald-400 mt-1">${mod.hp > 0 ? `+${mod.hp} HP` : 'Handling/Aero'} ${mod.weight !== 0 ? `| ${mod.weight > 0 ? '+' : ''}${mod.weight} lbs` : ''}</p>
-                        </div>
-                        <div class="mt-4 pt-3 border-t border-garageBorder flex justify-between items-center">
-                            <span class="text-xs text-zinc-400">Part Cost</span>
-                            <span class="font-bold text-accentOrange">$${mod.cost.toLocaleString()}</span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function toggleMod(id) {
-            if (selectedMods.includes(id)) {
-                selectedMods = selectedMods.filter(m => m !== id);
-            } else {
-                selectedMods.push(id);
-            }
-            renderMods();
-            updateCalculations();
-        }
-
-        function setLaborMode(mode) {
-            laborMode = mode;
-            document.getElementById('btn-labor-diy').className = mode === 'diy' ? 'px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition' : 'px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition';
-            document.getElementById('btn-labor-shop').className = mode === 'shop' ? 'px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition' : 'px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition';
-            updateCalculations();
-        }
-
-        function updateCalculations() {
-            // Calculations
-            let totalHp = selectedCar.stockHp + selectedEngine.hpAdd;
-            let totalWeight = selectedCar.stockWeight + selectedEngine.weightAdd;
-            let partsCost = selectedCar.basePrice + selectedEngine.cost;
-
-            selectedMods.forEach(modId => {
-                const mod = modifications.find(m => m.id === modId);
-                totalHp += mod.hp;
-                totalWeight += mod.weight;
-                partsCost += mod.cost;
-            });
-
-            // Labor estimation
-            let laborCost = 0;
-            if (laborMode === 'shop') {
-                // Estimate labor hours based on engine swap and mods count
-                let hours = selectedEngine.id === 'stock' ? 10 : 60;
-                hours += selectedMods.length * 4;
-                laborCost = hours * 90; // $90/hr shop rate
-            }
-
-            const grandTotal = partsCost + laborCost;
-
-            // Performance Estimates
-            // Simple power-to-weight acceleration estimation
-            let powerToWeightRatio = (totalHp / totalWeight).toFixed(3);
-            let estimated060 = Math.max(2.5, (8.5 - (totalHp / 100) * 0.9 + (totalWeight / 1000) * 0.3)).toFixed(1);
-
-            // Update UI Sidebar Stats
-            document.getElementById('stat-car-name').innerText = selectedCar.name;
-            document.getElementById('stat-power-label').innerText = `${totalHp} HP`;
-            document.getElementById('stat-060').innerText = `${estimated060}s`;
-            document.getElementById('stat-ptw').innerText = `${powerToWeightRatio} HP/lb`;
-            document.getElementById('stat-weight').innerText = `${totalWeight.toLocaleString()} lbs`;
-            document.getElementById('stat-cost').innerText = `$${grandTotal.toLocaleString()}`;
-
-            // Dyno bar height scale (max ~600hp)
-            let dynoHeightPercent = Math.min(100, Math.max(15, (totalHp / 600) * 100));
-            document.getElementById('dyno-bar').style.height = `${dynoHeightPercent}%`;
-
-            // Update Summary Table
-            let tableBody = document.getElementById('cost-table-body');
-            let rows = `
-                <tr>
-                    <td class="p-3 font-medium">${selectedCar.name} (Base Chassis)</td>
-                    <td class="p-3 text-zinc-400">Chassis</td>
-                    <td class="p-3 text-right font-mono">$${selectedCar.basePrice.toLocaleString()}</td>
-                </tr>
-            `;
-
-            if (selectedEngine.id !== 'stock') {
-                rows += `
-                    <tr>
-                        <td class="p-3 font-medium">${selectedEngine.name}</td>
-                        <td class="p-3 text-zinc-400">Engine Swap</td>
-                        <td class="p-3 text-right font-mono">$${selectedEngine.cost.toLocaleString()}</td>
-                    </tr>
-                `;
-            }
-
-            selectedMods.forEach(modId => {
-                const mod = modifications.find(m => m.id === modId);
-                rows += `
-                    <tr>
-                        <td class="p-3 font-medium">${mod.name}</td>
-                        <td class="p-3 text-zinc-400">${mod.category}</td>
-                        <td class="p-3 text-right font-mono">$${mod.cost.toLocaleString()}</td>
-                    </tr>
-                `;
-            });
-
-            if (laborMode === 'shop') {
-                rows += `
-                    <tr>
-                        <td class="p-3 font-medium">Professional Speed Shop Labor</td>
-                        <td class="p-3 text-zinc-400">Labor ($90/hr)</td>
-                        <td class="p-3 text-right font-mono">$${laborCost.toLocaleString()}</td>
-                    </tr>
-                `;
-            } else {
-                rows += `
-                    <tr>
-                        <td class="p-3 font-medium italic text-zinc-400">DIY Garage Installation</td>
-                        <td class="p-3 text-zinc-400">Labor</td>
-                        <td class="p-3 text-right font-mono text-emerald-400">$0 (Free)</td>
-                    </tr>
-                `;
-            }
-
-            tableBody.innerHTML = rows;
-            document.getElementById('summary-total-cost').innerText = `$${grandTotal.toLocaleString()}`;
-        }
-    </script>
-    
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDnb0ATeGOM1lH-KfGpVMn9BFaQcWn6EuQ",
-    authDomain: "gearhead-lab-db.firebaseapp.com",
-    projectId: "gearhead-lab-db",
-    storageBucket: "gearhead-lab-db.firebasestorage.app",
-    messagingSenderId: "683309233523",
-    appId: "1:683309233523:web:1b2242fa8bdab1c37ec106"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  async function loadCarsFromFirestore() {
-    try {
-      const querySnapshot = await getDocs(collection(db, "cars"));
-      if (!querySnapshot.empty) {
-        cars = [];
-        querySnapshot.forEach((doc) => {
-          cars.push({ id: doc.id, ...doc.data() });
-        });
-        renderCars();
       }
-    } catch (e) {
-      console.log("Using default cars");
     }
-  }
+  </script>
+</head>
+<body class="bg-zinc-950 text-zinc-100 font-sans min-h-screen flex flex-col antialiased">
 
-  loadCarsFromFirestore();
-</script>
+  <!-- Header section -->
+  <header class="border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="bg-gradient-to-tr from-orange-600 to-amber-500 p-2.5 rounded-xl text-white shadow-lg">
+          <i class="fa-solid fa-gauge-high text-xl"></i>
+        </div>
+        <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-white via-zinc-200 to-orange-400 bg-clip-text text-transparent">
+          GEARHEAD LAB
+        </span>
+      </div>
+      <div id="db-status-badge" class="text-xs px-2.5 py-1 rounded-full border border-zinc-700 bg-zinc-800 text-zinc-400">
+        <i class="fa-solid fa-spinner fa-spin text-amber-500 mr-1"></i> Syncing with Firestore...
+      </div>
+    </div>
+  </header>
 
+  <!-- Main Wizard Container -->
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8 flex flex-col">
+
+    <!-- Stepper Tracker -->
+    <div class="mb-8">
+      <div class="flex justify-between items-center mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <span id="step-indicator">Step 1 of 5</span>
+        <span id="step-title" class="text-orange-400">Select Chassis</span>
+      </div>
+      <div class="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800">
+        <div id="progress-bar" class="bg-gradient-to-r from-orange-500 to-amber-400 h-full w-1/5 transition-all duration-300"></div>
+      </div>
+    </div>
+
+    <!-- PAGE 1: CHASSIS SELECTION -->
+    <div id="page-1" class="page-step flex-grow flex flex-col">
+      <h2 class="text-2xl font-bold mb-2">Step 1: Choose Your Project Car</h2>
+      <p class="text-zinc-400 text-sm mb-6">Select a base chassis loaded live from your Firebase <code class="text-orange-400 font-mono">cars</code> collection.</p>
+      
+      <div id="chassis-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+        <!-- Dyno-loaded strictly from Firebase -->
+      </div>
+    </div>
+
+    <!-- PAGE 2: ENGINE SELECTION -->
+    <div id="page-2" class="page-step hidden flex-grow flex flex-col">
+      <h2 class="text-2xl font-bold mb-2">Step 2: Select Engine Swap</h2>
+      <p class="text-zinc-400 text-sm mb-6">Choose a powerplant loaded live from your Firebase <code class="text-orange-400 font-mono">engines</code> collection.</p>
+
+      <div id="engine-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+        <!-- Dyno-loaded strictly from Firebase -->
+      </div>
+    </div>
+
+    <!-- PAGE 3: PARTS CHECKLIST -->
+    <div id="page-3" class="page-step hidden flex-grow flex flex-col">
+      <h2 class="text-2xl font-bold mb-2">Step 3: Swap Components Checklist</h2>
+      <p class="text-zinc-400 text-sm mb-6">Select conversion hardware loaded live from your Firebase <code class="text-orange-400 font-mono">components</code> collection.</p>
+
+      <div id="components-checklist" class="space-y-3 mb-8">
+        <!-- Dyno-loaded strictly from Firebase -->
+      </div>
+    </div>
+
+    <!-- PAGE 4: LABOR & BUDGET -->
+    <div id="page-4" class="page-step hidden flex-grow flex flex-col">
+      <h2 class="text-2xl font-bold mb-2">Step 4: Labor & Buffer Setup</h2>
+      <p class="text-zinc-400 text-sm mb-6">Configure fabrication rates and contingency safety buffer.</p>
+
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-6 mb-8">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-400 mb-2">Build Preference</label>
+          <select id="labor-mode" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm focus:border-orange-500 transition">
+            <option value="diy">100% DIY (Garage Build - $0 Labor)</option>
+            <option value="hybrid" selected>Hybrid (DIY + Pro Wiring/Tune)</option>
+            <option value="pro">Pro Speed Shop Turnkey</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-zinc-400 mb-2">Shop Hourly Rate ($/hr)</label>
+          <input type="number" id="shop-rate" value="110" class="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-sm font-mono focus:border-orange-500 transition">
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <label class="text-xs font-semibold text-zinc-400">Contingency Buffer</label>
+            <span id="buffer-display" class="text-xs font-mono font-bold text-orange-400">15%</span>
+          </div>
+          <input type="range" id="buffer-slider" min="0" max="30" value="15" class="w-full accent-orange-500 cursor-pointer">
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 5: SUMMARY & DYNO -->
+    <div id="page-5" class="page-step hidden flex-grow flex flex-col">
+      <h2 class="text-2xl font-bold mb-2">Step 5: Project Build Summary</h2>
+      <p class="text-zinc-400 text-sm mb-6">Review performance gains and total estimated cost.</p>
+
+      <div class="bg-gradient-to-br from-zinc-900 to-zinc-950 border border-orange-500/30 rounded-2xl p-6 mb-6 shadow-xl">
+        <span class="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Total Estimated Cost</span>
+        <div id="final-total" class="text-5xl font-extrabold text-orange-400 font-mono my-2">$0</div>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6 pt-4 border-t border-zinc-800 text-xs">
+          <div><span class="text-zinc-500 block">Parts Total</span><span id="sum-parts" class="font-mono font-bold text-sm">$0</span></div>
+          <div><span class="text-zinc-500 block">Labor Total</span><span id="sum-labor" class="font-mono font-bold text-sm">$0</span></div>
+          <div><span class="text-zinc-500 block">Est. Time</span><span id="sum-hours" class="font-mono font-bold text-amber-400 text-sm">0 hrs</span></div>
+          <div><span class="text-zinc-500 block">Power-to-Weight</span><span id="sum-power-weight" class="font-mono font-bold text-emerald-400 text-sm">0 hp/ton</span></div>
+        </div>
+      </div>
+
+      <div class="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-8">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-4">Horsepower Comparison</h3>
+        <div class="space-y-4">
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span>Stock Engine</span>
+              <span id="stock-hp-text" class="font-mono">0 HP</span>
+            </div>
+            <div class="w-full bg-zinc-950 rounded-full h-3 overflow-hidden border border-zinc-800">
+              <div id="stock-bar" class="bg-zinc-600 h-full" style="width: 0%"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-xs mb-1 text-orange-400 font-semibold">
+              <span>Swapped Engine</span>
+              <span id="swapped-hp-text" class="font-mono">0 HP</span>
+            </div>
+            <div class="w-full bg-zinc-950 rounded-full h-3 overflow-hidden border border-zinc-800">
+              <div id="swapped-bar" class="bg-gradient-to-r from-orange-500 to-amber-400 h-full" style="width: 0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Navigation Buttons -->
+    <div class="flex justify-between items-center pt-4 border-t border-zinc-800 mt-auto">
+      <button id="prev-btn" class="px-5 py-2.5 rounded-xl border border-zinc-800 font-semibold text-sm hover:bg-zinc-900 transition disabled:opacity-40" disabled>
+        <i class="fa-solid fa-arrow-left mr-2"></i> Previous
+      </button>
+      <button id="next-btn" class="px-6 py-2.5 rounded-xl bg-orange-500 text-zinc-950 font-bold text-sm hover:bg-orange-400 transition shadow-lg shadow-orange-500/20">
+        Next <i class="fa-solid fa-arrow-right ml-2"></i>
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Firebase JavaScript Module -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnb0ATeGOM1lH-KfGpVMn9BFaQcWn6EuQ",
+      authDomain: "gearhead-lab-db.firebaseapp.com",
+      projectId: "gearhead-lab-db",
+      storageBucket: "gearhead-lab-db.firebasestorage.app",
+      messagingSenderId: "683309233523",
+      appId: "1:683309233523:web:1b2242fa8bdab1c37ec106"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Initial empty arrays - loaded exclusively from Firebase
+    let firebaseCars = [];
+    let firebaseEngines = [];
+    let firebaseComponents = [];
+
+    // Wizard State
+    let currentStep = 1;
+    let selectedChassis = null;
+    let selectedEngine = null;
+
+    // Fetch all collections directly from Firebase
+    async function loadAllFirebaseData() {
+      const badge = document.getElementById('db-status-badge');
+      try {
+        // 1. Fetch Cars
+        const carsSnap = await getDocs(collection(db, "cars"));
+        firebaseCars = [];
+        carsSnap.forEach((doc) => {
+          const data = doc.data();
+          firebaseCars.push({
+            id: doc.id,
+            name: data.name || "Custom Car",
+            basePrice: Number(data.basePrice) || 0,
+            stockHp: Number(data.stockHp) || 0,
+            stockWeight: Number(data.stockWeight) || 0,
+            image: data.image || "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80"
+          });
+        });
+
+        // 2. Fetch Engines
+        const enginesSnap = await getDocs(collection(db, "engines"));
+        firebaseEngines = [];
+        enginesSnap.forEach((doc) => {
+          const data = doc.data();
+          firebaseEngines.push({
+            id: doc.id,
+            name: data.name || "Custom Engine",
+            hp: Number(data.hp) || 0,
+            tq: Number(data.tq) || 0,
+            cost: Number(data.cost) || 0,
+            hours: Number(data.hours) || 0
+          });
+        });
+
+        // 3. Fetch Components
+        const compSnap = await getDocs(collection(db, "components"));
+        firebaseComponents = [];
+        compSnap.forEach((doc) => {
+          const data = doc.data();
+          firebaseComponents.push({
+            id: doc.id,
+            name: data.name || "Custom Adapter/Part",
+            cost: Number(data.cost) || 0,
+            hours: Number(data.hours) || 0,
+            checked: true
+          });
+        });
+
+        if (firebaseCars.length > 0) {
+          selectedChassis = firebaseCars[0];
+        }
+        if (firebaseEngines.length > 0) {
+          selectedEngine = firebaseEngines[0];
+        }
+
+        badge.innerHTML = `<i class="fa-solid fa-check text-emerald-400 mr-1"></i> Live Firebase Sync Active`;
+        badge.className = "text-xs px-2.5 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400";
+      } catch (e) {
+        console.error("Firestore Error:", e);
+        badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> Database Error`;
+      }
+
+      renderChassisList();
+    }
+
+    function renderChassisList() {
+      const grid = document.getElementById('chassis-grid');
+      grid.innerHTML = '';
+
+      if (firebaseCars.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full p-8 bg-zinc-900 border border-dashed border-zinc-800 rounded-xl text-center">
+            <i class="fa-solid fa-car-side text-3xl text-orange-500/60 mb-3 block"></i>
+            <h3 class="font-bold text-zinc-300 mb-1">No Cars Found in Firebase</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Please go to your Firebase Console and add documents to your <span class="font-mono text-orange-400">cars</span> collection!</p>
+          </div>
+        `;
+        return;
+      }
+
+      firebaseCars.forEach(car => {
+        const active = selectedChassis && car.id === selectedChassis.id;
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border cursor-pointer transition flex flex-col ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
+        card.innerHTML = `
+          <img src="${car.image}" class="w-full h-28 object-cover rounded-lg mb-3">
+          <h4 class="font-bold text-sm mb-1">${car.name}</h4>
+          <div class="text-xs text-zinc-400 space-y-1 font-mono">
+            <div>Stock Power: ${car.stockHp} HP</div>
+            <div>Weight: ${car.stockWeight} lbs</div>
+          </div>
+        `;
+        card.onclick = () => {
+          selectedChassis = car;
+          renderChassisList();
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    function renderEngines() {
+      const grid = document.getElementById('engine-grid');
+      grid.innerHTML = '';
+
+      if (firebaseEngines.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full p-8 bg-zinc-900 border border-dashed border-zinc-800 rounded-xl text-center">
+            <i class="fa-solid fa-engine text-3xl text-orange-500/60 mb-3 block"></i>
+            <h3 class="font-bold text-zinc-300 mb-1">No Engines Found in Firebase</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Add documents to your <span class="font-mono text-orange-400">engines</span> collection in Firebase Console!</p>
+          </div>
+        `;
+        return;
+      }
+
+      firebaseEngines.forEach(eng => {
+        const active = selectedEngine && eng.id === selectedEngine.id;
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border cursor-pointer transition ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-2">
+            <h4 class="font-bold text-sm">${eng.name}</h4>
+            <span class="text-xs font-mono font-bold text-orange-400">$${eng.cost.toLocaleString()}</span>
+          </div>
+          <div class="text-xs text-zinc-400 font-mono space-y-1">
+            <div>Output: ${eng.hp} HP / ${eng.tq} lb-ft</div>
+            <div>Est. Installation: ${eng.hours} hrs</div>
+          </div>
+        `;
+        card.onclick = () => {
+          selectedEngine = eng;
+          renderEngines();
+        };
+        grid.appendChild(card);
+      });
+    }
+
+    function renderComponents() {
+      const list = document.getElementById('components-checklist');
+      list.innerHTML = '';
+
+      if (firebaseComponents.length === 0) {
+        list.innerHTML = `
+          <div class="p-8 bg-zinc-900 border border-dashed border-zinc-800 rounded-xl text-center">
+            <i class="fa-solid fa-screwdriver-wrench text-3xl text-orange-500/60 mb-3 block"></i>
+            <h3 class="font-bold text-zinc-300 mb-1">No Components Found in Firebase</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Add documents to your <span class="font-mono text-orange-400">components</span> collection in Firebase Console!</p>
+          </div>
+        `;
+        return;
+      }
+
+      firebaseComponents.forEach((comp, idx) => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between p-3.5 bg-zinc-900 border border-zinc-800 rounded-xl";
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="chk-${idx}" ${comp.checked ? 'checked' : ''} class="w-4 h-4 rounded text-orange-500 accent-orange-500">
+            <label for="chk-${idx}" class="text-xs font-medium cursor-pointer">${comp.name}</label>
+          </div>
+          <span class="text-xs font-mono text-zinc-400">$${comp.cost} (${comp.hours}h)</span>
+        `;
+        item.querySelector('input').onchange = (e) => {
+          firebaseComponents[idx].checked = e.target.checked;
+        };
+        list.appendChild(item);
+      });
+    }
+
+    function calculateSummary() {
+      if (!selectedChassis || !selectedEngine) return;
+
+      let partsTotal = selectedEngine.cost;
+      let laborHours = selectedEngine.hours;
+
+      firebaseComponents.forEach(c => {
+        if (c.checked) {
+          partsTotal += c.cost;
+          laborHours += c.hours;
+        }
+      });
+
+      const mode = document.getElementById('labor-mode').value;
+      const rate = Number(document.getElementById('shop-rate').value) || 0;
+      const buffer = Number(document.getElementById('buffer-slider').value) / 100;
+
+      let laborTotal = 0;
+      if (mode === 'pro') laborTotal = laborHours * rate;
+      if (mode === 'hybrid') laborTotal = (laborHours * 0.35) * rate;
+
+      const subtotal = partsTotal + laborTotal;
+      const grandTotal = subtotal + (subtotal * buffer);
+
+      const weightTons = (selectedChassis.stockWeight || 2000) / 2000;
+      const hpPerTon = Math.round((selectedEngine.hp || 0) / weightTons);
+
+      document.getElementById('final-total').textContent = `$${Math.round(grandTotal).toLocaleString()}`;
+      document.getElementById('sum-parts').textContent = `$${partsTotal.toLocaleString()}`;
+      document.getElementById('sum-labor').textContent = `$${Math.round(laborTotal).toLocaleString()}`;
+      document.getElementById('sum-hours').textContent = `${laborHours} hrs`;
+      document.getElementById('sum-power-weight').textContent = `${hpPerTon} hp/ton`;
+
+      document.getElementById('stock-hp-text').textContent = `${selectedChassis.stockHp} HP`;
+      document.getElementById('swapped-hp-text').textContent = `${selectedEngine.hp} HP`;
+
+      document.getElementById('stock-bar').style.width = `${Math.min(100, ((selectedChassis.stockHp || 0) / 600) * 100)}%`;
+      document.getElementById('swapped-bar').style.width = `${Math.min(100, ((selectedEngine.hp || 0) / 600) * 100)}%`;
+    }
+
+    function updateStepView() {
+      const titles = ["Select Chassis", "Select Engine", "Components Checklist", "Labor Setup", "Summary & Dyno"];
+      document.querySelectorAll('.page-step').forEach((page, i) => {
+        page.classList.toggle('hidden', i + 1 !== currentStep);
+      });
+
+      document.getElementById('step-indicator').textContent = `Step ${currentStep} of 5`;
+      document.getElementById('step-title').textContent = titles[currentStep - 1];
+      document.getElementById('progress-bar').style.width = `${(currentStep / 5) * 100}%`;
+
+      document.getElementById('prev-btn').disabled = currentStep === 1;
+      document.getElementById('next-btn').innerHTML = currentStep === 5 ? 'Finish' : 'Next <i class="fa-solid fa-arrow-right ml-2"></i>';
+
+      if (currentStep === 2) renderEngines();
+      if (currentStep === 3) renderComponents();
+      if (currentStep === 5) calculateSummary();
+    }
+
+    document.getElementById('prev-btn').onclick = () => {
+      if (currentStep > 1) {
+        currentStep--;
+        updateStepView();
+      }
+    };
+
+    document.getElementById('next-btn').onclick = () => {
+      if (currentStep < 5) {
+        currentStep++;
+        updateStepView();
+      } else {
+        alert("Build project complete! Return to Step 1 to configure another project.");
+        currentStep = 1;
+        updateStepView();
+      }
+    };
+
+    document.getElementById('buffer-slider').oninput = (e) => {
+      document.getElementById('buffer-display').textContent = `${e.target.value}%`;
+    };
+
+    window.onload = () => {
+      loadAllFirebaseData();
+      updateStepView();
+    };
+  </script>
 </body>
 </html>
 
