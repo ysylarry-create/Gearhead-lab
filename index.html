@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gearhead Lab - Project Car & Engine Swap Estimator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        garageDark: '#121214',
+                        garageCard: '#1a1a1e',
+                        garageBorder: '#27272f',
+                        accentOrange: '#f97316',
+                        accentRed: '#ef4444',
+                        accentBlue: '#3b82f6',
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #121214; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #121214; }
+        ::-webkit-scrollbar-thumb { background: #27272f; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        .tab-btn.active { border-bottom: 2px solid #f97316; color: #f97316; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Header / Navbar -->
+    <header class="bg-garageCard border-b border-garageBorder sticky top-0 z-50 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-accentOrange/10 p-2.5 rounded-xl border border-accentOrange/30 text-accentOrange text-xl">
+                    <i class="fa-solid fa-wrench"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wider uppercase text-white">Gearhead<span class="text-accentOrange">Lab</span></h1>
+                    <p class="text-xs text-zinc-400">Project Car & Engine Swap Estimator</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="flex gap-2 bg-garageDark p-1.5 rounded-xl border border-garageBorder overflow-x-auto max-w-full">
+                <button onclick="switchTab('garage')" id="btn-tab-garage" class="tab-btn active px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-car"></i> 1. Select Car
+                </button>
+                <button onclick="switchTab('swap')" id="btn-tab-swap" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-rotate"></i> 2. Engine Swap
+                </button>
+                <button onclick="switchTab('mods')" id="btn-tab-mods" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-gears"></i> 3. Mods & Parts
+                </button>
+                <button onclick="switchTab('summary')" id="btn-tab-summary" class="tab-btn px-4 py-2 text-sm font-semibold rounded-lg transition text-zinc-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-file-invoice-dollar"></i> 4. Build Sheet & Cost
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left 2 Columns: Dynamic Content Tabs -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- TAB 1: VEHICLE SELECTOR -->
+            <div id="tab-garage" class="space-y-6">
+                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
+                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                        <span class="text-accentOrange"><i class="fa-solid fa-car-side"></i></span> Choose Base Chassis
+                    </h2>
+                    <p class="text-sm text-zinc-400 mb-4">Select the foundational platform for your build project.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="vehicle-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: ENGINE SWAP MATRIX -->
+            <div id="tab-swap" class="hidden space-y-6">
+                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
+                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                        <span class="text-accentOrange"><i class="fa-solid fa-bolt"></i></span> Powerplant & Engine Swap Options
+                    </h2>
+                    <p class="text-sm text-zinc-400 mb-4">Keep stock engine or drop in a custom powerplant. Review custom fabrication and wiring complexity ratings.</p>
+                    
+                    <div class="space-y-4" id="engine-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: MODIFICATIONS CONFIGURATOR -->
+            <div id="tab-mods" class="hidden space-y-6">
+                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl">
+                    <h2 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                        <span class="text-accentOrange"><i class="fa-solid fa-toolbox"></i></span> Performance & Aesthetic Modifications
+                    </h2>
+                    <p class="text-sm text-zinc-400 mb-4">Select upgrades to boost horsepower, improve handling, and reduce weight.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="mods-grid">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: SUMMARY & COST BREAKDOWN -->
+            <div id="tab-summary" class="hidden space-y-6">
+                <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl space-y-6">
+                    <div>
+                        <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
+                            <span class="text-accentOrange"><i class="fa-solid fa-receipt"></i></span> Project Cost & Build Blueprint
+                        </h2>
+                        <p class="text-sm text-zinc-400">Complete breakdown of parts, labor mode, and estimated build sheet.</p>
+                    </div>
+
+                    <!-- Labor Mode Toggle -->
+                    <div class="bg-garageDark p-4 rounded-xl border border-garageBorder flex flex-col sm:flex-row justify-between items-center gap-4">
+                        <div>
+                            <span class="font-semibold text-white block">Labor Strategy</span>
+                            <span class="text-xs text-zinc-400">DIY Garage builds save thousands on shop rates.</span>
+                        </div>
+                        <div class="flex bg-garageCard p-1 rounded-lg border border-garageBorder">
+                            <button onclick="setLaborMode('diy')" id="btn-labor-diy" class="px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition">DIY (Free Labor)</button>
+                            <button onclick="setLaborMode('shop')" id="btn-labor-shop" class="px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition">Speed Shop ($90/hr)</button>
+                        </div>
+                    </div>
+
+                    <!-- Itemized Cost Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-garageDark text-zinc-400 uppercase text-xs border-b border-garageBorder">
+                                <tr>
+                                    <th class="p-3">Component / Part</th>
+                                    <th class="p-3">Category</th>
+                                    <th class="p-3 text-right">Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cost-table-body" class="divide-y divide-garageBorder text-zinc-200">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center bg-garageDark p-4 rounded-xl border border-garageBorder gap-4">
+                        <div>
+                            <span class="text-xs text-zinc-400 block uppercase font-bold tracking-wider">Total Estimated Budget</span>
+                            <span class="text-3xl font-black text-accentOrange" id="summary-total-cost">$0</span>
+                        </div>
+                        <button onclick="alert('Build sheet saved to local memory! Ready for export.')" class="w-full sm:w-auto bg-accentOrange hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition shadow-lg shadow-orange-500/20 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-download"></i> Export Build Sheet
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Persistent Live Stats & Performance Card -->
+        <div class="space-y-6">
+            <div class="bg-garageCard border border-garageBorder p-5 rounded-2xl sticky top-20 space-y-6">
+                <div>
+                    <h3 class="text-xs uppercase font-extrabold tracking-widest text-zinc-400 mb-1">Active Build Platform</h3>
+                    <h2 class="text-xl font-black text-white" id="stat-car-name">Mazda Miata (NA)</h2>
+                </div>
+
+                <!-- Dyno Visualizer Simulation -->
+                <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-zinc-400 uppercase"><i class="fa-solid fa-chart-line text-accentOrange"></i> Simulated Dyno Output</span>
+                        <span class="text-xs text-accentOrange font-mono" id="stat-power-label">140 HP / 125 LB-FT</span>
+                    </div>
+                    <div class="h-28 w-full bg-garageCard rounded-lg relative overflow-hidden flex items-end p-2 border border-garageBorder">
+                        <!-- Grid lines -->
+                        <div class="absolute inset-0 grid grid-rows-4 grid-cols-4 pointer-events-none opacity-10">
+                            <div class="border-b border-white"></div>
+                            <div class="border-b border-white"></div>
+                            <div class="border-b border-white"></div>
+                            <div class="border-b border-white"></div>
+                        </div>
+                        <!-- Dynamic Dyno Curve Bar/Fill -->
+                        <div id="dyno-bar" class="w-full bg-gradient-to-t from-orange-600 to-amber-400 rounded transition-all duration-500" style="height: 30%;"></div>
+                    </div>
+                </div>
+
+                <!-- Performance Metrics Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
+                        <span class="text-xs text-zinc-400 block">Est. 0-60 MPH</span>
+                        <span class="text-lg font-black text-white" id="stat-060">8.0s</span>
+                    </div>
+                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
+                        <span class="text-xs text-zinc-400 block">Power-to-Weight</span>
+                        <span class="text-lg font-black text-white" id="stat-ptw">0.06 HP/lb</span>
+                    </div>
+                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
+                        <span class="text-xs text-zinc-400 block">Total Weight</span>
+                        <span class="text-lg font-black text-white" id="stat-weight">2,300 lbs</span>
+                    </div>
+                    <div class="bg-garageDark p-3 rounded-xl border border-garageBorder">
+                        <span class="text-xs text-zinc-400 block">Current Cost</span>
+                        <span class="text-lg font-black text-accentOrange" id="stat-cost">$5,000</span>
+                    </div>
+                </div>
+
+                <!-- Quick Jump Navigation / Proceed -->
+                <button onclick="nextTab()" id="proceed-btn" class="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold py-3 px-4 rounded-xl transition shadow-lg shadow-orange-500/25 flex items-center justify-center gap-2">
+                    <span>Proceed to Engine Swap</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-garageCard border-t border-garageBorder mt-auto py-4 text-center text-xs text-zinc-500">
+        Gearhead Lab Engine & Modification Estimator &copy; 2026. Built for car builders and tuners.
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Database of Cars
+        const cars = [
+            { id: 'miata', name: 'Mazda Miata (NA)', basePrice: 5000, stockHp: 130, stockWeight: 2300, image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=600&q=80' },
+            { id: '240sx', name: 'Nissan 240SX (S13)', basePrice: 8500, stockHp: 140, stockWeight: 2700, image: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=600&q=80' },
+            { id: 'civic', name: 'Honda Civic Hatch (EG)', basePrice: 4500, stockHp: 125, stockWeight: 2350, image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=600&q=80' },
+            { id: 'e36', name: 'BMW 325i (E36)', basePrice: 6000, stockHp: 189, stockWeight: 3000, image: 'https://images.unsplash.com/photo-1555353540-64580b51c258?auto=format&fit=crop&w=600&q=80' }
+        ];
+
+        // Database of Engines
+        const engines = [
+            { id: 'stock', name: 'Keep Stock Engine', hpAdd: 0, weightAdd: 0, cost: 0, difficulty: 'Stock', desc: 'Retain factory powerplant with regular maintenance.' },
+            { id: 'ls1', name: '5.7L LS1 V8 Crate', hpAdd: 220, weightAdd: 80, cost: 6500, difficulty: 'High (Custom Mounts/Wiring)', desc: 'Legendary Chevy small-block swap. Massive power, balanced weight.' },
+            { id: '2jz', name: '3.0L 2JZ-GTE Turbo', hpAdd: 280, weightAdd: 150, cost: 8500, difficulty: 'Expert (Fab Work Required)', desc: 'Bulletproof inline-6 turbo platform capable of extreme boost.' },
+            { id: 'k24', name: '2.4L K24 i-VTEC Swap', hpAdd: 80, weightAdd: -20, cost: 4200, difficulty: 'Medium (Adapter Kit)', desc: 'High-revving naturally aspirated powerhouse with incredible aftermarket support.' }
+        ];
+
+        // Database of Upgrades
+        const modifications = [
+            { id: 'turbo', name: 'Stage 2 Turbocharger Kit', hp: 120, weight: 45, cost: 3200, category: 'Power' },
+            { id: 'ecu', name: 'Standalone ECU & Dyno Tune', hp: 35, weight: 2, cost: 1500, category: 'Electronics' },
+            { id: 'coilovers', name: 'Track-Spec Adjustable Coilovers', hp: 0, weight: -10, cost: 1400, category: 'Handling' },
+            { id: 'brakes', name: 'Big Brake Kit (4-Piston)', hp: 0, weight: 15, cost: 1800, category: 'Handling' },
+            { id: 'exhaust', name: '3-inch Stainless Catback Exhaust', hp: 15, weight: -15, cost: 850, category: 'Power' },
+            { id: 'carbon', name: 'Carbon Fiber Hood & Trunk', hp: 0, weight: -45, cost: 1600, category: 'Weight Reduction' }
+        ];
+
+        // State Management
+        let selectedCar = cars[0];
+        let selectedEngine = engines[0];
+        let selectedMods = [];
+        let laborMode = 'diy'; // 'diy' or 'shop'
+        let currentTab = 'garage';
+
+        // Initialization
+        window.onload = function() {
+            renderCars();
+            renderEngines();
+            renderMods();
+            updateCalculations();
+        };
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            ['garage', 'swap', 'mods', 'summary'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`btn-tab-${t}`).classList.remove('active');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-tab-${tabId}`).classList.add('active');
+
+            // Update proceed button text / action
+            const proceedBtn = document.getElementById('proceed-btn');
+            if (tabId === 'garage') {
+                proceedBtn.innerHTML = '<span>Proceed to Engine Swap</span> <i class="fa-solid fa-arrow-right"></i>';
+                proceedBtn.onclick = () => switchTab('swap');
+            } else if (tabId === 'swap') {
+                proceedBtn.innerHTML = '<span>Proceed to Modifications</span> <i class="fa-solid fa-arrow-right"></i>';
+                proceedBtn.onclick = () => switchTab('mods');
+            } else if (tabId === 'mods') {
+                proceedBtn.innerHTML = '<span>View Build Cost & Summary</span> <i class="fa-solid fa-arrow-right"></i>';
+                proceedBtn.onclick = () => switchTab('summary');
+            } else {
+                proceedBtn.innerHTML = '<span>Modify Build Setup</span> <i class="fa-solid fa-rotate-right"></i>';
+                proceedBtn.onclick = () => switchTab('garage');
+            }
+        }
+
+        function nextTab() {
+            if (currentTab === 'garage') switchTab('swap');
+            else if (currentTab === 'swap') switchTab('mods');
+            else if (currentTab === 'mods') switchTab('summary');
+            else switchTab('garage');
+        }
+
+        function renderCars() {
+            const grid = document.getElementById('vehicle-grid');
+            grid.innerHTML = cars.map(car => `
+                <div onclick="selectCar('${car.id}')" class="cursor-pointer bg-garageDark border ${selectedCar.id === car.id ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col justify-between">
+                    <div>
+                        <div class="h-32 rounded-lg bg-cover bg-center mb-3 border border-garageBorder" style="background-image: url('${car.image}')"></div>
+                        <h3 class="font-bold text-white text-base">${car.name}</h3>
+                        <p class="text-xs text-zinc-400 mt-1">Stock: ${car.stockHp} HP | ${car.stockWeight} lbs</p>
+                    </div>
+                    <div class="mt-4 pt-3 border-t border-garageBorder flex justify-between items-center">
+                        <span class="text-xs text-zinc-400">Base Chassis Value</span>
+                        <span class="font-bold text-accentOrange">$${car.basePrice.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCar(id) {
+            selectedCar = cars.find(c => c.id === id);
+            renderCars();
+            updateCalculations();
+        }
+
+        function renderEngines() {
+            const list = document.getElementById('engine-list');
+            list.innerHTML = engines.map(eng => `
+                <div onclick="selectEngine('${eng.id}')" class="cursor-pointer bg-garageDark border ${selectedEngine.id === eng.id ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-white">${eng.name}</h3>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-zinc-800 text-zinc-300 font-mono">${eng.difficulty}</span>
+                        </div>
+                        <p class="text-xs text-zinc-400 mt-1">${eng.desc}</p>
+                        <p class="text-xs font-semibold text-emerald-400 mt-2">+${eng.hpAdd} HP | ${eng.weightAdd >= 0 ? '+' : ''}${eng.weightAdd} lbs weight</p>
+                    </div>
+                    <div class="text-right sm:text-right w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-garageBorder flex sm:flex-col justify-between items-center sm:items-end">
+                        <span class="text-xs text-zinc-400 sm:hidden">Swap Cost:</span>
+                        <span class="font-black text-accentOrange text-lg">$${eng.cost.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectEngine(id) {
+            selectedEngine = engines.find(e => e.id === id);
+            renderEngines();
+            updateCalculations();
+        }
+
+        function renderMods() {
+            const grid = document.getElementById('mods-grid');
+            grid.innerHTML = modifications.map(mod => {
+                const isSelected = selectedMods.includes(mod.id);
+                return `
+                    <div onclick="toggleMod('${mod.id}')" class="cursor-pointer bg-garageDark border ${isSelected ? 'border-accentOrange bg-accentOrange/5' : 'border-garageBorder'} rounded-xl p-4 transition hover:border-accentOrange/60 flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start">
+                                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 font-mono">${mod.category}</span>
+                                <div class="w-5 h-5 rounded-md border ${isSelected ? 'bg-accentOrange border-accentOrange text-white' : 'border-garageBorder'} flex items-center justify-center text-xs">
+                                    ${isSelected ? '<i class="fa-solid fa-check"></i>' : ''}
+                                </div>
+                            </div>
+                            <h3 class="font-bold text-white mt-2">${mod.name}</h3>
+                            <p class="text-xs text-emerald-400 mt-1">${mod.hp > 0 ? `+${mod.hp} HP` : 'Handling/Aero'} ${mod.weight !== 0 ? `| ${mod.weight > 0 ? '+' : ''}${mod.weight} lbs` : ''}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-garageBorder flex justify-between items-center">
+                            <span class="text-xs text-zinc-400">Part Cost</span>
+                            <span class="font-bold text-accentOrange">$${mod.cost.toLocaleString()}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleMod(id) {
+            if (selectedMods.includes(id)) {
+                selectedMods = selectedMods.filter(m => m !== id);
+            } else {
+                selectedMods.push(id);
+            }
+            renderMods();
+            updateCalculations();
+        }
+
+        function setLaborMode(mode) {
+            laborMode = mode;
+            document.getElementById('btn-labor-diy').className = mode === 'diy' ? 'px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition' : 'px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition';
+            document.getElementById('btn-labor-shop').className = mode === 'shop' ? 'px-4 py-2 text-xs font-bold rounded-md bg-accentOrange text-white transition' : 'px-4 py-2 text-xs font-bold rounded-md text-zinc-400 hover:text-white transition';
+            updateCalculations();
+        }
+
+        function updateCalculations() {
+            // Calculations
+            let totalHp = selectedCar.stockHp + selectedEngine.hpAdd;
+            let totalWeight = selectedCar.stockWeight + selectedEngine.weightAdd;
+            let partsCost = selectedCar.basePrice + selectedEngine.cost;
+
+            selectedMods.forEach(modId => {
+                const mod = modifications.find(m => m.id === modId);
+                totalHp += mod.hp;
+                totalWeight += mod.weight;
+                partsCost += mod.cost;
+            });
+
+            // Labor estimation
+            let laborCost = 0;
+            if (laborMode === 'shop') {
+                // Estimate labor hours based on engine swap and mods count
+                let hours = selectedEngine.id === 'stock' ? 10 : 60;
+                hours += selectedMods.length * 4;
+                laborCost = hours * 90; // $90/hr shop rate
+            }
+
+            const grandTotal = partsCost + laborCost;
+
+            // Performance Estimates
+            // Simple power-to-weight acceleration estimation
+            let powerToWeightRatio = (totalHp / totalWeight).toFixed(3);
+            let estimated060 = Math.max(2.5, (8.5 - (totalHp / 100) * 0.9 + (totalWeight / 1000) * 0.3)).toFixed(1);
+
+            // Update UI Sidebar Stats
+            document.getElementById('stat-car-name').innerText = selectedCar.name;
+            document.getElementById('stat-power-label').innerText = `${totalHp} HP`;
+            document.getElementById('stat-060').innerText = `${estimated060}s`;
+            document.getElementById('stat-ptw').innerText = `${powerToWeightRatio} HP/lb`;
+            document.getElementById('stat-weight').innerText = `${totalWeight.toLocaleString()} lbs`;
+            document.getElementById('stat-cost').innerText = `$${grandTotal.toLocaleString()}`;
+
+            // Dyno bar height scale (max ~600hp)
+            let dynoHeightPercent = Math.min(100, Math.max(15, (totalHp / 600) * 100));
+            document.getElementById('dyno-bar').style.height = `${dynoHeightPercent}%`;
+
+            // Update Summary Table
+            let tableBody = document.getElementById('cost-table-body');
+            let rows = `
+                <tr>
+                    <td class="p-3 font-medium">${selectedCar.name} (Base Chassis)</td>
+                    <td class="p-3 text-zinc-400">Chassis</td>
+                    <td class="p-3 text-right font-mono">$${selectedCar.basePrice.toLocaleString()}</td>
+                </tr>
+            `;
+
+            if (selectedEngine.id !== 'stock') {
+                rows += `
+                    <tr>
+                        <td class="p-3 font-medium">${selectedEngine.name}</td>
+                        <td class="p-3 text-zinc-400">Engine Swap</td>
+                        <td class="p-3 text-right font-mono">$${selectedEngine.cost.toLocaleString()}</td>
+                    </tr>
+                `;
+            }
+
+            selectedMods.forEach(modId => {
+                const mod = modifications.find(m => m.id === modId);
+                rows += `
+                    <tr>
+                        <td class="p-3 font-medium">${mod.name}</td>
+                        <td class="p-3 text-zinc-400">${mod.category}</td>
+                        <td class="p-3 text-right font-mono">$${mod.cost.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+
+            if (laborMode === 'shop') {
+                rows += `
+                    <tr>
+                        <td class="p-3 font-medium">Professional Speed Shop Labor</td>
+                        <td class="p-3 text-zinc-400">Labor ($90/hr)</td>
+                        <td class="p-3 text-right font-mono">$${laborCost.toLocaleString()}</td>
+                    </tr>
+                `;
+            } else {
+                rows += `
+                    <tr>
+                        <td class="p-3 font-medium italic text-zinc-400">DIY Garage Installation</td>
+                        <td class="p-3 text-zinc-400">Labor</td>
+                        <td class="p-3 text-right font-mono text-emerald-400">$0 (Free)</td>
+                    </tr>
+                `;
+            }
+
+            tableBody.innerHTML = rows;
+            document.getElementById('summary-total-cost').innerText = `$${grandTotal.toLocaleString()}`;
+        }
+    </script>
+</body>
+</html>
+
