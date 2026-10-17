@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gearhead Lab - Bulk Upload Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white p-6 font-sans min-h-screen flex items-center justify-center">
+  <div class="max-w-lg w-full bg-zinc-900 border border-zinc-800 p-6 rounded-2xl shadow-xl space-y-4">
+    <h1 class="text-xl font-extrabold text-orange-500">Bulk Data Uploader</h1>
+    <p class="text-xs text-zinc-400">Target collection: <span id="target-display" class="font-mono text-amber-400 font-bold">engines</span></p>
+    
+    <button id="upload-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-zinc-950 font-bold py-3 rounded-xl transition shadow-lg shadow-orange-500/20">
+      Start Bulk Upload
+    </button>
+    
+    <div id="status" class="text-xs font-mono text-zinc-300 bg-zinc-950 p-4 rounded-xl border border-zinc-800 h-48 overflow-y-auto space-y-1">
+      Ready to upload...
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Your Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnb0ATeGOM1lH-KfGpVMn9BFaQcWn6EuQ",
+      authDomain: "gearhead-lab-db.firebaseapp.com",
+      projectId: "gearhead-lab-db",
+      storageBucket: "gearhead-lab-db.firebasestorage.app",
+      messagingSenderId: "683309233523",
+      appId: "1:683309233523:web:1b2242fa8bdab1c37ec106"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ============================================================
+    // 1. CHANGE TARGET COLLECTION HERE ("engines", "cars", OR "components")
+    // ============================================================
+    const targetCollection = "cars";
+
+    // ============================================================
+    // 2. PASTE YOUR NEW ITEMS INSIDE THIS ARRAY LATER
+    // ============================================================
+    const itemsToUpload = [
+  { name: "Toyota Supra (MK4)", stockHp: 320, stockWeight: 3400 },
+  { name: "Nissan Skyline GT-R (R34)", stockHp: 276, stockWeight: 3439 }
+];
+
+
+    document.getElementById('target-display').textContent = targetCollection;
+
+    document.getElementById('upload-btn').onclick = async () => {
+      const statusDiv = document.getElementById('status');
+      
+      if (itemsToUpload.length === 0) {
+        statusDiv.innerHTML = "⚠️ No items found in the array! Please edit bulk-upload.html and add items to itemsToUpload first.";
+        return;
+      }
+
+      statusDiv.innerHTML = `Starting upload to collection "${targetCollection}"...<br><br>`;
+
+      for (let i = 0; i < itemsToUpload.length; i++) {
+        const item = itemsToUpload[i];
+        try {
+          await addDoc(collection(db, targetCollection), item);
+          statusDiv.innerHTML += `✅ (${i + 1}/${itemsToUpload.length}) Added: ${item.name}<br>`;
+        } catch (e) {
+          statusDiv.innerHTML += `❌ Error adding ${item.name}: ${e.message}<br>`;
+        }
+      }
+
+      statusDiv.innerHTML += "<br>🎉 Upload complete!";
+    };
+  </script>
+</body>
+</html>
