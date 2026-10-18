@@ -304,23 +304,24 @@
         grid.appendChild(card);
       });
     }
-
-    function renderEngines() {
+    function renderEngines(filteredList = null) {
       const grid = document.getElementById('engine-grid');
       grid.innerHTML = '';
 
-      if (firebaseEngines.length === 0) {
+      const enginesToDisplay = filteredList !== null ? filteredList : firebaseEngines;
+
+      if (enginesToDisplay.length === 0) {
         grid.innerHTML = `
           <div class="col-span-full p-8 bg-zinc-900 border border-dashed border-zinc-800 rounded-xl text-center">
             <i class="fa-solid fa-engine text-3xl text-orange-500/60 mb-3 block"></i>
-            <h3 class="font-bold text-zinc-300 mb-1">No Engines Found in Firebase</h3>
-            <p class="text-xs text-zinc-500 max-w-md mx-auto">Add documents to your <span class="font-mono text-orange-400">engines</span> collection in Firebase Console!</p>
+            <h3 class="font-bold text-zinc-300 mb-1">No Engines Found</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Try typing a different name in the search bar.</p>
           </div>
         `;
         return;
       }
 
-      firebaseEngines.forEach(eng => {
+      enginesToDisplay.forEach(eng => {
         const active = selectedEngine && eng.id === selectedEngine.id;
         const card = document.createElement('div');
         card.className = `p-4 rounded-xl border cursor-pointer transition ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
@@ -336,11 +337,20 @@
         `;
         card.onclick = () => {
           selectedEngine = eng;
-          renderEngines();
+          renderEngines(filteredList);
         };
         grid.appendChild(card);
       });
     }
+
+    // Search bar event listener
+    document.addEventListener('input', (e) => {
+      if (e.target && e.target.id === 'engine-search') {
+        const term = e.target.value.toLowerCase();
+        const filtered = firebaseEngines.filter(eng => eng.name.toLowerCase().includes(term));
+        renderEngines(filtered);
+      }
+    });
 
     function renderComponents() {
       const list = document.getElementById('components-checklist');
