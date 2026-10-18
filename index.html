@@ -296,7 +296,12 @@
         const active = selectedChassis && car.id === selectedChassis.id;
         const card = document.createElement('div');
         card.className = `p-4 rounded-xl border cursor-pointer transition flex flex-col ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
+        
+        // Safely check if an image exists, otherwise render clean pure-spec card
+        const imageHtml = car.image ? `<img src="${car.image}" class="w-full h-28 object-cover rounded-lg mb-3">` : '';
+
         card.innerHTML = `
+          ${imageHtml}
           <h4 class="font-bold text-sm mb-1">${car.name}</h4>
           <div class="text-xs text-zinc-400 space-y-1 font-mono">
             <div>Stock Power: ${car.stockHp} HP</div>
@@ -310,7 +315,6 @@
         grid.appendChild(card);
       });
     }
-
 
       firebaseCars.forEach(car => {
         const active = selectedChassis && car.id === selectedChassis.id;
