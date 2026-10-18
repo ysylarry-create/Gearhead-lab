@@ -58,7 +58,16 @@
     <div id="page-1" class="page-step flex-grow flex flex-col">
       <h2 class="text-2xl font-bold mb-2">Step 1: Choose Your Project Car</h2>
       <p class="text-zinc-400 text-sm mb-6">Select a base chassis loaded live from your Firebase <code class="text-orange-400 font-mono">cars</code> collection.</p>
-      
+            <!-- Chassis Search Bar -->
+      <div class="mb-6">
+        <input 
+          type="text" 
+          id="chassis-search" 
+          placeholder="Search project cars..." 
+          class="w-full bg-zinc-900 border border-zinc-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-orange-500 transition text-sm font-mono"
+        >
+      </div>
+
       <div id="chassis-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         <!-- Dyno-loaded strictly from Firebase -->
       </div>
