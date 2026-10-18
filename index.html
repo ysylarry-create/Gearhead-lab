@@ -275,24 +275,42 @@
         console.error("Firestore Error:", e);
         badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> Database Error`;
       }
-
-      renderChassisList();
-    }
-
-    function renderChassisList() {
+    function renderChassisList(filteredList = null) {
       const grid = document.getElementById('chassis-grid');
       grid.innerHTML = '';
 
-      if (firebaseCars.length === 0) {
+      const carsToDisplay = filteredList !== null ? filteredList : firebaseCars;
+
+      if (carsToDisplay.length === 0) {
         grid.innerHTML = `
           <div class="col-span-full p-8 bg-zinc-900 border border-dashed border-zinc-800 rounded-xl text-center">
             <i class="fa-solid fa-car-side text-3xl text-orange-500/60 mb-3 block"></i>
-            <h3 class="font-bold text-zinc-300 mb-1">No Cars Found in Firebase</h3>
-            <p class="text-xs text-zinc-500 max-w-md mx-auto">Please go to your Firebase Console and add documents to your <span class="font-mono text-orange-400">cars</span> collection!</p>
+            <h3 class="font-bold text-zinc-300 mb-1">No Cars Found</h3>
+            <p class="text-xs text-zinc-500 max-w-md mx-auto">Try typing a different name in the search bar.</p>
           </div>
         `;
         return;
       }
+
+      carsToDisplay.forEach(car => {
+        const active = selectedChassis && car.id === selectedChassis.id;
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border cursor-pointer transition flex flex-col ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
+        card.innerHTML = `
+          <h4 class="font-bold text-sm mb-1">${car.name}</h4>
+          <div class="text-xs text-zinc-400 space-y-1 font-mono">
+            <div>Stock Power: ${car.stockHp} HP</div>
+            <div>Weight: ${car.stockWeight} lbs</div>
+          </div>
+        `;
+        card.onclick = () => {
+          selectedChassis = car;
+          renderChassisList(filteredList);
+        };
+        grid.appendChild(card);
+      });
+    }
+
 
       firebaseCars.forEach(car => {
         const active = selectedChassis && car.id === selectedChassis.id;
