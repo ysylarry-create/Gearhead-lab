@@ -63,16 +63,26 @@
         <!-- Dyno-loaded strictly from Firebase -->
       </div>
     </div>
-
     <!-- PAGE 2: ENGINE SELECTION -->
     <div id="page-2" class="page-step hidden flex-grow flex flex-col">
       <h2 class="text-2xl font-bold mb-2">Step 2: Select Engine Swap</h2>
-      <p class="text-zinc-400 text-sm mb-6">Choose a powerplant loaded live from your Firebase <code class="text-orange-400 font-mono">engines</code> collection.</p>
+      <p class="text-zinc-400 text-sm mb-6">Choose a powerplant loaded live from your Firebase engines collection.</p>
+
+      <!-- Paste search bar here -->
+      <div class="mb-6">
+        <input 
+          type="text" 
+          id="engine-search" 
+          placeholder="Search engines..." 
+          class="w-full bg-zinc-900 border border-zinc-800 text-white px-4 py-3 rounded-xl focus:outline-none focus:border-orange-500 transition text-sm font-mono"
+        >
+      </div>
 
       <div id="engine-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
         <!-- Dyno-loaded strictly from Firebase -->
       </div>
     </div>
+
 
     <!-- PAGE 3: PARTS CHECKLIST -->
     <div id="page-3" class="page-step hidden flex-grow flex flex-col">
