@@ -92,7 +92,6 @@
       </div>
     </div>
 
-
     <!-- PAGE 3: PARTS CHECKLIST -->
     <div id="page-3" class="page-step hidden flex-grow flex flex-col">
       <h2 class="text-2xl font-bold mb-2">Step 3: Swap Components Checklist</h2>
@@ -230,6 +229,7 @@
             basePrice: Number(data.basePrice) || 0,
             stockHp: Number(data.stockHp) || 0,
             stockWeight: Number(data.stockWeight) || 0,
+            image: data.image || ""
           });
         });
 
@@ -275,8 +275,13 @@
         console.error("Firestore Error:", e);
         badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> Database Error`;
       }
+
+      renderChassisList();
+    }
+
     function renderChassisList(filteredList = null) {
       const grid = document.getElementById('chassis-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       const carsToDisplay = filteredList !== null ? filteredList : firebaseCars;
@@ -297,7 +302,6 @@
         const card = document.createElement('div');
         card.className = `p-4 rounded-xl border cursor-pointer transition flex flex-col ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
         
-        // Safely check if an image exists, otherwise render clean pure-spec card
         const imageHtml = car.image ? `<img src="${car.image}" class="w-full h-28 object-cover rounded-lg mb-3">` : '';
 
         card.innerHTML = `
@@ -316,27 +320,9 @@
       });
     }
 
-      firebaseCars.forEach(car => {
-        const active = selectedChassis && car.id === selectedChassis.id;
-        const card = document.createElement('div');
-        card.className = `p-4 rounded-xl border cursor-pointer transition flex flex-col ${active ? 'border-orange-500 bg-orange-500/10' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}`;
-        card.innerHTML = `
-          <img src="${car.image}" class="w-full h-28 object-cover rounded-lg mb-3">
-          <h4 class="font-bold text-sm mb-1">${car.name}</h4>
-          <div class="text-xs text-zinc-400 space-y-1 font-mono">
-            <div>Stock Power: ${car.stockHp} HP</div>
-            <div>Weight: ${car.stockWeight} lbs</div>
-          </div>
-        `;
-        card.onclick = () => {
-          selectedChassis = car;
-          renderChassisList();
-        };
-        grid.appendChild(card);
-      });
-    }
     function renderEngines(filteredList = null) {
       const grid = document.getElementById('engine-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       const enginesToDisplay = filteredList !== null ? filteredList : firebaseEngines;
@@ -374,8 +360,13 @@
       });
     }
 
-    // Search bar event listener
+    // Search bar event listeners
     document.addEventListener('input', (e) => {
+      if (e.target && e.target.id === 'chassis-search') {
+        const term = e.target.value.toLowerCase();
+        const filtered = firebaseCars.filter(car => car.name.toLowerCase().includes(term));
+        renderChassisList(filtered);
+      }
       if (e.target && e.target.id === 'engine-search') {
         const term = e.target.value.toLowerCase();
         const filtered = firebaseEngines.filter(eng => eng.name.toLowerCase().includes(term));
@@ -385,6 +376,7 @@
 
     function renderComponents() {
       const list = document.getElementById('components-checklist');
+      if (!list) return;
       list.innerHTML = '';
 
       if (firebaseComponents.length === 0) {
@@ -468,6 +460,7 @@
       document.getElementById('prev-btn').disabled = currentStep === 1;
       document.getElementById('next-btn').innerHTML = currentStep === 5 ? 'Finish' : 'Next <i class="fa-solid fa-arrow-right ml-2"></i>';
 
+      if (currentStep === 1) renderChassisList();
       if (currentStep === 2) renderEngines();
       if (currentStep === 3) renderComponents();
       if (currentStep === 5) calculateSummary();
@@ -502,4 +495,3 @@
   </script>
 </body>
 </html>
-
